@@ -27,6 +27,7 @@ resource "google_oracle_database_cloud_vm_cluster" "my_vmcluster"{
     cpu_core_count = var.cpu_core_count
     gi_version = var.gi_version
     hostname_prefix = var.hostname_prefix
+    db_server_ocids = [data.google_oracle_database_db_servers.mydbserver.db_servers.0.properties.0.ocid, data.google_oracle_database_db_servers.mydbserver.db_servers.1.properties.0.ocid]
   }
 
   deletion_protection = var.deletion_protection
@@ -36,4 +37,10 @@ data google_oracle_database_cloud_exadata_infrastructure "cloudExadataInfrastruc
   cloud_exadata_infrastructure_id = var.exadata_infrastructure_id
   location = var.vm_cluster_location
   project = var.project_id
+}
+
+data "google_oracle_database_db_servers" "mydbserver" {
+  location = var.vm_cluster_location
+  project = var.project_id
+  cloud_exadata_infrastructure = data.google_oracle_database_cloud_exadata_infrastructure.cloudExadataInfrastructures
 }
