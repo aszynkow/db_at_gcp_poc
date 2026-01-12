@@ -25,13 +25,17 @@ db_at_gcp_poc/
 │   ├── README.md             # Detailed setup and configuration guide
 │   ├── dbgcp.tf              # Exadata and VM cluster Terraform resources
 │   ├── variables.tf          # Input variables definitions
-│   └── .terraform.lock.hcl   # Provider version lock file
 │
-└── vmcluster/                 # VM Cluster configuration
-    ├── README.md             # VM cluster specific documentation
-    ├── dbgcp.tf              # VM cluster Terraform resources
+├── vmcluster/                 # VM Cluster configuration
+│   ├── README.md             # VM cluster specific documentation
+│   ├── dbgcp.tf              # VM cluster Terraform resources
+│   ├── variables.tf          # Input variables definitions
+│
+└── ohome+cdb+pdb/             # Database Home, CDB, and PDB
+    ├── README.md             # Database deployment guide
+    ├── provider.tf           # OCI provider configuration
+    ├── database.tf           # Database resources (OHOME, CDB, PDB)
     ├── variables.tf          # Input variables definitions
-    └── .terraform.lock.hcl   # Provider version lock file
 ```
 
 ## 🚀 Quick Start
@@ -57,10 +61,11 @@ db_at_gcp_poc/
 
    - **[infra+vmcluster](infra+vmcluster/README.md)** - Complete infrastructure with Exadata and VM Cluster
    - **[vmcluster](vmcluster/README.md)** - VM Cluster only (requires existing Exadata infrastructure)
+   - **[ohome+cdb+pdb](ohome+cdb+pdb/README.md)** - Database Home, Container Database, and Pluggable Databases
 
 3. **Navigate to Your Module**
    ```bash
-   cd infra+vmcluster  # or vmcluster
+   cd infra+vmcluster  # or vmcluster or ohome+cdb+pdb
    ```
 
 4. **Initialize Terraform**
@@ -134,18 +139,49 @@ Key Features:
 - License type options
 - Network and subnet integration
 
+### 3. ohome+cdb+pdb
+
+**Oracle Database Home, Container Database, and Pluggable Databases**
+
+This module provisions Oracle database instances on an existing VM Cluster:
+
+- Database Home (OHOME) deployment
+- Container Database (CDB) creation
+- Pluggable Database (PDB) provisioning
+- TDE (Transparent Data Encryption) configuration
+- Backup and recovery settings
+
+**Use this module when you:**
+- Have an existing VM Cluster ready
+- Need to deploy Oracle database instances
+- Want to manage multiple PDBs within a CDB
+- Require multitenant database architecture
+
+📖 **[Full Documentation →](ohome+cdb+pdb/README.md)**
+
+Key Features:
+- Database version configuration (19.x, 21.x)
+- Multiple pluggable databases support
+- TDE wallet encryption
+- Automatic backup configuration
+- Character set and language customization
+- OLTP and Data Warehouse workload options
+
 ## 🔧 Configuration
 
 Each module uses Terraform variables for customization. Common variables include:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `project_id` | GCP Project ID | `my-gcp-project` |
-| `region` | GCP Region | `europe-west2` |
-| `vm_cluster_id` | Cluster identifier | `prod-vm-cluster-1` |
-| `cpu_core_count` | CPU cores | `8` |
-| `gi_version` | Grid Infrastructure version | `19.0.0.0` |
-| `license_type` | License model | `LICENSE_INCLUDED` |
+| Variable | Description | Module(s) | Example |
+|----------|-------------|-----------|----------|
+| `project_id` | GCP Project ID | infra+vmcluster, vmcluster | `my-gcp-project` |
+| `region` | GCP Region | infra+vmcluster, vmcluster | `europe-west2` |
+| `vm_cluster_id` | Cluster identifier | infra+vmcluster, vmcluster, ohome+cdb+pdb | `prod-vm-cluster-1` |
+| `cpu_core_count` | CPU cores | infra+vmcluster, vmcluster | `8` |
+| `gi_version` | Grid Infrastructure version | vmcluster | `19.0.0.0` |
+| `license_type` | License model | infra+vmcluster, vmcluster | `LICENSE_INCLUDED` |
+| `ohome_db_version` | Oracle database version | ohome+cdb+pdb | `19.23.0.0` |
+| `database_database_db_name` | CDB name | ohome+cdb+pdb | `PRODDB` |
+| `pluggable_database_name` | PDB names | ohome+cdb+pdb | `["PDB1", "PDB2"]` |
 
 See individual module READMEs for complete variable documentation.
 
@@ -174,6 +210,14 @@ See individual module READMEs for complete variable documentation.
 │  │  • Configurable CPU cores                         │  │
 │  │  • Production-grade HA capabilities               │  │
 │  └──────────────────────────────────────────────────┘  │
+│                      ↓                                  │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │      Database Home, CDB, and PDBs                │  │
+│  │  • Oracle DBMS Installation (OHOME)              │  │
+│  │  • Container Database (CDB)                       │  │
+│  │  • Pluggable Databases (PDBs)                     │  │
+│  │  • TDE Encryption & Backup Configuration          │  │
+│  └──────────────────────────────────────────────────┘  │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -189,9 +233,16 @@ See individual module READMEs for complete variable documentation.
 
 ## 📝 Common Tasks
 
-### Deploy Complete Infrastructure
+### Deploy Complete Infrastructure Stack
 ```bash
+# Step 1: Deploy infrastructure and VM cluster
 cd infra+vmcluster
+terraform init
+terraform plan
+terraform apply
+
+# Step 2: Deploy databases
+cd ../ohome+cdb+pdb
 terraform init
 terraform plan
 terraform apply
@@ -200,6 +251,14 @@ terraform apply
 ### Deploy Additional VM Cluster
 ```bash
 cd vmcluster
+terraform init
+terraform plan
+terraform apply
+```
+
+### Deploy Databases on Existing Cluster
+```bash
+cd ohome+cdb+pdb
 terraform init
 terraform plan
 terraform apply
@@ -243,6 +302,8 @@ gcloud auth application-default login
 - [Terraform Google Provider](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
 - [Oracle Database Cloud Service](https://cloud.google.com/sql/docs/oracle)
 - [GCP Networking Guide](https://cloud.google.com/vpc/docs)
+- [Oracle Database Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/19/)
+- [OCI Terraform Provider](https://registry.terraform.io/providers/oracle/oci/latest/docs)
 
 ## 🔄 Terraform State
 
@@ -270,6 +331,7 @@ For production environments:
 | Google Provider (beta) | ≥ 5.0 |
 | Google Cloud SDK | Latest |
 | GCP APIs | Oracle Database, Compute Engine, Resource Manager |
+| OCI Provider | Latest |
 
 ## 🤝 Contributing
 
@@ -293,6 +355,7 @@ For issues or questions:
 
 - [Exadata Infrastructure Guide](infra+vmcluster/README.md)
 - [VM Cluster Setup](vmcluster/README.md)
+- [Database Configuration](ohome+cdb+pdb/README.md)
 - [Terraform Best Practices](https://www.terraform.io/docs)
 - [GCP Security Best Practices](https://cloud.google.com/docs/enterprise/best-practices-for-running-cost-effective-kubernetes)
 
