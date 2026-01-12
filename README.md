@@ -1,139 +1,305 @@
-# DB at GCP
+# DB at GCP - Oracle Database on Google Cloud Platform
 
 [![Terraform](https://img.shields.io/badge/Terraform-7B42BC?logo=terraform&logoColor=white)](https://www.terraform.io/)
 [![Google Cloud](https://img.shields.io/badge/Google_Cloud-4285F4?logo=google-cloud&logoColor=white)](https://cloud.google.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A Terraform configuration to deploy an Oracle Database Cloud VM Cluster on Google Cloud Platform (GCP). This setup provisions a fully configured VM cluster backed by Exadata infrastructure, enabling high-performance Oracle database operations in the cloud.
+A comprehensive Terraform project for deploying Oracle Database infrastructure on Google Cloud Platform (GCP). This repository contains multiple modules for deploying and managing Oracle Database VM Clusters and their underlying infrastructure.
 
-## Overview
+## 📋 Project Overview
 
-This project automates the deployment of an Oracle Database Cloud VM Cluster using Google's Oracle Database service. The configuration includes:
+This project provides Terraform configurations to automate the deployment of Oracle Database solutions on GCP, including:
 
-- **VM Cluster Creation**: Deploys a cloud VM cluster with customizable CPU cores, memory, and networking.
-- **Exadata Integration**: Leverages existing Exadata infrastructure for optimal performance.
-- **Security Configuration**: Includes SSH key management and network isolation.
-- **License Management**: Supports included or bring-your-own-license models.
+- **Oracle Cloud VM Clusters**: High-performance database clusters with flexible compute resources
+- **Exadata Infrastructure**: Dedicated infrastructure optimized for Oracle Database workloads
+- **Network Integration**: Secure networking with ODB networks and subnets
+- **Automated Provisioning**: Complete IaC solutions for repeatable deployments
 
-Key features:
-- Automated provisioning of Oracle Database environments
-- Scalable CPU and storage configurations
-- Secure access via SSH keys
-- Deletion protection for production safety
+## 📁 Directory Structure
 
-## Prerequisites
-
-Before running this configuration, ensure you have:
-
-- **Terraform**: Version 1.0 or later installed ([Download](https://www.terraform.io/downloads))
-- **Google Cloud Account**: Access to a GCP project with billing enabled
-- **gcloud CLI**: Configured with your GCP account ([Installation Guide](https://cloud.google.com/sdk/docs/install))
-- **Permissions**: Appropriate IAM roles for Oracle Database and Compute Engine operations
-- **Existing Infrastructure**: Pre-configured ODB Network and Exadata Infrastructure
-
-## Quick Start
-
-### 1. Clone and Navigate
-```bash
-git clone <your-repo-url>
-cd db_at_gcp
+```
+db_at_gcp_poc/
+├── README.md                  # This file
+├── LICENSE                    # Project license
+├── infra+vmcluster/           # Infrastructure and VM Cluster deployment
+│   ├── README.md             # Detailed setup and configuration guide
+│   ├── dbgcp.tf              # Exadata and VM cluster Terraform resources
+│   ├── variables.tf          # Input variables definitions
+│   └── .terraform.lock.hcl   # Provider version lock file
+│
+└── vmcluster/                 # VM Cluster configuration
+    ├── README.md             # VM cluster specific documentation
+    ├── dbgcp.tf              # VM cluster Terraform resources
+    ├── variables.tf          # Input variables definitions
+    └── .terraform.lock.hcl   # Provider version lock file
 ```
 
-### 2. Configure Variables
-Edit `variables.tf` or create a `terraform.tfvars` file to customize:
+## 🚀 Quick Start
 
-```hcl
-project_id = "your-gcp-project-id"
-region = "us-central1"
-vm_cluster_id = "my-oracle-vm-cluster"
-exadata_infrastructure_id = "your-exadata-infra"
-# ... other variables as needed
+### Prerequisites
+
+- **Terraform** ≥ 1.0
+- **Google Cloud SDK** (gcloud CLI)
+- **GCP Account** with billing enabled
+- **Appropriate IAM Permissions** for Oracle Database and Compute services
+
+### Getting Started
+
+1. **Clone the Repository**
+   ```bash
+   git clone <repository-url>
+   cd db_at_gcp_poc
+   ```
+
+2. **Choose Your Deployment Module**
+
+   Choose one of the modules below based on your needs:
+
+   - **[infra+vmcluster](infra+vmcluster/README.md)** - Complete infrastructure with Exadata and VM Cluster
+   - **[vmcluster](vmcluster/README.md)** - VM Cluster only (requires existing Exadata infrastructure)
+
+3. **Navigate to Your Module**
+   ```bash
+   cd infra+vmcluster  # or vmcluster
+   ```
+
+4. **Initialize Terraform**
+   ```bash
+   terraform init
+   ```
+
+5. **Configure Variables**
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your values
+   ```
+
+6. **Plan and Apply**
+   ```bash
+   terraform plan
+   terraform apply
+   ```
+
+## 📚 Modules
+
+### 1. infra+vmcluster
+
+**Complete Oracle Database Infrastructure Deployment**
+
+This module provisions everything needed for a production Oracle Database deployment on GCP:
+
+- Cloud Exadata Infrastructure (compute and storage nodes)
+- Oracle Cloud VM Cluster
+- Network integration with ODB networks
+- Security and access configuration
+
+**Use this module when you need:**
+- A complete Oracle Database environment from scratch
+- Both Exadata infrastructure and VM cluster management
+- Full control over compute and storage resources
+
+📖 **[Full Documentation →](infra+vmcluster/README.md)**
+
+Key Features:
+- Exadata infrastructure shape configuration (Exadata.X9M)
+- Flexible compute and storage node counts
+- Integration with existing ODB networks
+- SSH key management
+- License type configuration
+- Deletion protection
+
+### 2. vmcluster
+
+**Oracle Cloud VM Cluster Configuration**
+
+This module focuses on VM cluster provisioning and assumes Exadata infrastructure already exists:
+
+- Oracle Cloud VM Cluster deployment
+- Grid Infrastructure (GI) configuration
+- CPU core and memory allocation
+- Hostname and networking setup
+- License management
+
+**Use this module when you:**
+- Have existing Exadata infrastructure
+- Need to deploy additional VM clusters
+- Want to manage clusters separately from infrastructure
+
+📖 **[Full Documentation →](vmcluster/README.md)**
+
+Key Features:
+- Customizable CPU core allocation
+- GI version selection
+- Hostname prefix configuration
+- License type options
+- Network and subnet integration
+
+## 🔧 Configuration
+
+Each module uses Terraform variables for customization. Common variables include:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `project_id` | GCP Project ID | `my-gcp-project` |
+| `region` | GCP Region | `europe-west2` |
+| `vm_cluster_id` | Cluster identifier | `prod-vm-cluster-1` |
+| `cpu_core_count` | CPU cores | `8` |
+| `gi_version` | Grid Infrastructure version | `19.0.0.0` |
+| `license_type` | License model | `LICENSE_INCLUDED` |
+
+See individual module READMEs for complete variable documentation.
+
+## 📊 Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    GCP Project                          │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │             ODB Networks & Subnets               │  │
+│  │  • Primary ODB Subnet                            │  │
+│  │  • Backup ODB Subnet                             │  │
+│  └──────────────────────────────────────────────────┘  │
+│                      ↓                                  │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │        Cloud Exadata Infrastructure              │  │
+│  │  Shape: Exadata.X9M                              │  │
+│  │  Compute Nodes: 2+ | Storage Nodes: 3+           │  │
+│  └──────────────────────────────────────────────────┘  │
+│                      ↓                                  │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │       Oracle Cloud VM Clusters                    │  │
+│  │  • GI Version 19.0.0.0 or later                   │  │
+│  │  • Configurable CPU cores                         │  │
+│  │  • Production-grade HA capabilities               │  │
+│  └──────────────────────────────────────────────────┘  │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
 ```
 
-### 3. Initialize Terraform
+## 🔐 Security Best Practices
+
+- **SSH Access**: Configure SSH public keys in variables
+- **Deletion Protection**: Enabled by default to prevent accidental deletion
+- **Network Isolation**: Use ODB networks for secure database connectivity
+- **IAM Permissions**: Grant minimal required GCP IAM roles
+- **State Management**: Use remote state backend (GCS) for team collaboration
+- **Secrets**: Never commit sensitive data or terraform.tfvars to version control
+
+## 📝 Common Tasks
+
+### Deploy Complete Infrastructure
 ```bash
+cd infra+vmcluster
 terraform init
-```
-
-### 4. Plan the Deployment
-```bash
 terraform plan
-```
-Review the plan to ensure it matches your expectations.
-
-### 5. Apply the Configuration
-```bash
 terraform apply
 ```
-Type `yes` when prompted to confirm the deployment.
 
-## Validation
-
-After deployment, validate your Oracle Database Cloud VM Cluster:
-
-### 1. Terraform State Check
+### Deploy Additional VM Cluster
 ```bash
-terraform show
-```
-This displays the current state of all resources.
-
-### 2. GCP Console Verification
-- Navigate to [Oracle Database in GCP Console](https://console.cloud.google.com/oracle/database)
-- Locate your VM cluster under the specified project and region
-- Verify cluster status, CPU cores, and network configurations
-
-### 3. Connection Test
-Once provisioned, connect to the VM cluster using SSH:
-```bash
-ssh -i <your-private-key> oracle@<cluster-ip>
+cd vmcluster
+terraform init
+terraform plan
+terraform apply
 ```
 
-### 4. Database Access
-After successful deployment, you can:
-- Create databases within the VM cluster
-- Configure backup and recovery settings
-- Set up high availability features
+### Update Existing Configuration
+```bash
+# Edit terraform.tfvars
+terraform plan
+terraform apply
+```
 
-## Configuration Options
-
-### Key Variables
-- `project_id`: GCP project identifier
-- `region`: Deployment region (default: us-central1)
-- `cpu_core_count`: Number of CPU cores (default: 4)
-- `license_type`: License model (default: LICENSE_INCLUDED)
-- `deletion_protection`: Enable/disable resource deletion protection (default: true)
-
-### Networking
-- `odb_network`: Pre-configured Oracle Database network
-- `odb_subnet`: Primary subnet for the VM cluster
-- `backup_odb_subnet`: Dedicated subnet for backups
-
-## Troubleshooting
-
-- **Permission Errors**: Ensure your GCP account has the necessary IAM roles
-- **Quota Issues**: Check GCP quotas for Oracle Database resources
-- **Network Configuration**: Verify ODB network and subnet existence
-- **Terraform Lock**: Use `terraform force-unlock <lock-id>` if needed (rare)
-
-## Cleanup
-
-To remove the deployed resources:
+### Destroy Infrastructure
 ```bash
 terraform destroy
 ```
 
-**⚠️ Warning**: This will permanently delete the VM cluster and any associated data. Ensure backups are in place.
+> ⚠️ **Warning**: Deletion protection is enabled by default. Manually disable before destruction.
 
-## Contributing
+## 🐛 Troubleshooting
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+### Provider Issues
+```bash
+terraform init -upgrade
+terraform validate
+```
 
-## License
+### Authentication Errors
+```bash
+gcloud auth application-default login
+```
 
-This project is licensed under the terms specified in [LICENSE.txt](LICENSE.txt).
+### Network Connectivity
+- Verify ODB network resource paths
+- Check GCP project permissions
+- Ensure APIs are enabled in GCP console
 
-## Support
+## 📖 Documentation
 
-For issues related to Oracle Database on GCP, refer to the [official documentation](https://cloud.google.com/oracle/database/docs).
+- [GCP Oracle Database Documentation](https://cloud.google.com/oracle/docs)
+- [Terraform Google Provider](https://registry.terraform.io/providers/hashicorp/google/latest/docs)
+- [Oracle Database Cloud Service](https://cloud.google.com/sql/docs/oracle)
+- [GCP Networking Guide](https://cloud.google.com/vpc/docs)
+
+## 🔄 Terraform State
+
+For production environments:
+
+1. **Configure Remote State** (e.g., GCS bucket)
+   ```hcl
+   terraform {
+     backend "gcs" {
+       bucket = "my-terraform-state"
+       prefix = "db-at-gcp"
+     }
+   }
+   ```
+
+2. **Enable State Locking** for team collaboration
+
+3. **Backup State Files** regularly
+
+## 📋 Requirements
+
+| Component | Version |
+|-----------|---------|
+| Terraform | ≥ 1.0 |
+| Google Provider (beta) | ≥ 5.0 |
+| Google Cloud SDK | Latest |
+| GCP APIs | Oracle Database, Compute Engine, Resource Manager |
+
+## 🤝 Contributing
+
+1. Review existing documentation
+2. Test changes in a non-production environment
+3. Update relevant README files
+4. Follow Terraform best practices
+
+## 📄 License
+
+See [LICENSE](LICENSE) file for details.
+
+## 📞 Support
+
+For issues or questions:
+1. Check module-specific READMEs
+2. Review GCP and Terraform documentation
+3. Contact your GCP support team
+
+## 📚 Related Resources
+
+- [Exadata Infrastructure Guide](infra+vmcluster/README.md)
+- [VM Cluster Setup](vmcluster/README.md)
+- [Terraform Best Practices](https://www.terraform.io/docs)
+- [GCP Security Best Practices](https://cloud.google.com/docs/enterprise/best-practices-for-running-cost-effective-kubernetes)
+
+---
+
+**Last Updated**: January 2026
+
+**Project Status**: Active
+
+**Contributors**: Database Infrastructure Team
