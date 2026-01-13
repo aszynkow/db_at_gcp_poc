@@ -19,23 +19,29 @@ This project provides Terraform configurations to automate the deployment of Ora
 
 ```
 db_at_gcp_poc/
-├── README.md                  # This file
-├── LICENSE                    # Project license
-├── infra+vmcluster/           # Infrastructure and VM Cluster deployment
-│   ├── README.md             # Detailed setup and configuration guide
-│   ├── dbgcp.tf              # Exadata and VM cluster Terraform resources
-│   ├── variables.tf          # Input variables definitions
+├── README.md                             # This file
+├── LICENSE                               # Project license
 │
-├── vmcluster/                 # VM Cluster configuration
-│   ├── README.md             # VM cluster specific documentation
-│   ├── dbgcp.tf              # VM cluster Terraform resources
-│   ├── variables.tf          # Input variables definitions
+├── gcp/                                  # Google Cloud Platform Deployments
+│   │
+│   ├── infra+vmcluster/                  # GCP Infrastructure and VM Cluster deployment
+│   │   ├── README.md                    # Detailed setup and configuration guide
+│   │   ├── dbgcp.tf                     # Exadata and VM cluster Terraform resources
+│   │   ├── variables.tf                 # Input variables definitions
+│   │   └── .terraform.lock.hcl          # Provider version lock file
+│   │
+│   └── vmcluster/                        # GCP VM Cluster configuration
+│       ├── README.md                    # VM cluster specific documentation
+│       ├── dbgcp.tf                     # VM cluster Terraform resources
+│       ├── variables.tf                 # Input variables definitions
+│       └── .terraform.lock.hcl          # Provider version lock file
 │
-└── ohome+cdb+pdb/             # Database Home, CDB, and PDB
-    ├── README.md             # Database deployment guide
-    ├── provider.tf           # OCI provider configuration
-    ├── database.tf           # Database resources (OHOME, CDB, PDB)
-    ├── variables.tf          # Input variables definitions
+└── ohome+cdb+pdb/                        # OCI Database Home, CDB, and PDB
+    ├── README.md                         # Database deployment guide
+    ├── provider.tf                       # OCI provider configuration
+    ├── database.tf                       # Database resources (OHOME, CDB, PDB)
+    ├── variables.tf                      # Input variables definitions
+    └── .terraform.lock.hcl               # Provider version lock file
 ```
 
 ## 🚀 Quick Start
@@ -59,13 +65,17 @@ db_at_gcp_poc/
 
    Choose one of the modules below based on your needs:
 
-   - **[infra+vmcluster](infra+vmcluster/README.md)** - Complete infrastructure with Exadata and VM Cluster
-   - **[vmcluster](vmcluster/README.md)** - VM Cluster only (requires existing Exadata infrastructure)
-   - **[ohome+cdb+pdb](ohome+cdb+pdb/README.md)** - Database Home, Container Database, and Pluggable Databases
+   - **[GCP infra+vmcluster](gcp/infra+vmcluster/README.md)** - Complete GCP infrastructure with Exadata and VM Cluster
+   - **[GCP vmcluster](gcp/vmcluster/README.md)** - GCP VM Cluster only (requires existing Exadata infrastructure)
+   - **[OCI ohome+cdb+pdb](ohome+cdb+pdb/README.md)** - OCI Database Home, Container Database, and Pluggable Databases
 
 3. **Navigate to Your Module**
    ```bash
-   cd infra+vmcluster  # or vmcluster or ohome+cdb+pdb
+   # For GCP deployments
+   cd gcp/infra+vmcluster     # or gcp/vmcluster
+   
+   # For OCI deployments
+   cd ohome+cdb+pdb
    ```
 
 4. **Initialize Terraform**
@@ -85,6 +95,26 @@ db_at_gcp_poc/
    terraform apply
    ```
 
+## 🏗️ Architecture
+
+This project deploys a multi-tier OCI/GCP infrastructure with:
+
+- **Network Layer** - Secure VCN and subnet configuration (Network Security Zone)
+- **Compute Layer** - Exadata infrastructure with VM Clusters (Exadata & Database Security Zone)
+- **Database Layer** - Oracle Container Database (CDB) with Pluggable Databases (PDB)
+- **Security Layer** - OCI Security Zones, IAM policies, encryption (TDE), and monitoring
+
+### Security Zones & Compartmentalization
+
+This architecture implements OCI Security Zones with the following structure:
+
+**Key Architecture Components:**
+- **Two Security Zones:** Network (separate zone) and Exadata & Database (separate zone)
+- **Compartment Hierarchy:** Infra compartment with Prod and NonProd subcompartments
+- **Resource Segregation:** Production and Non-Production environments with different resource allocations
+- **Deployment Sequence:** 4-phase deployment (Network → Exadata → Production → Non-Production)
+- **Security Features:** Mandatory TDE encryption, Cloud Guard monitoring, VCN security controls, IAM role-based access
+
 ## 📚 Modules
 
 ### 1. infra+vmcluster
@@ -103,7 +133,7 @@ This module provisions everything needed for a production Oracle Database deploy
 - Both Exadata infrastructure and VM cluster management
 - Full control over compute and storage resources
 
-📖 **[Full Documentation →](infra+vmcluster/README.md)**
+📖 **[Full Documentation →](gcp/infra+vmcluster/README.md)**
 
 Key Features:
 - Exadata infrastructure shape configuration (Exadata.X9M)
@@ -130,7 +160,7 @@ This module focuses on VM cluster provisioning and assumes Exadata infrastructur
 - Need to deploy additional VM clusters
 - Want to manage clusters separately from infrastructure
 
-📖 **[Full Documentation →](vmcluster/README.md)**
+📖 **[Full Documentation →](gcp/vmcluster/README.md)**
 
 Key Features:
 - Customizable CPU core allocation
